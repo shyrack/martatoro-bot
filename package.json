@@ -9,5 +9,8 @@
     "start": ""
   },
   "author": "Flo | shyrack",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^4.5.2"
+  }
 }
