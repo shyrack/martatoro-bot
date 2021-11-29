@@ -1,0 +1,13 @@
+{
+  "name": "martatoro-bot",
+  "version": "0.0.1",
+  "description": "Just a Discord bot to play YouTube audios?",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "",
+    "dev": "",
+    "start": ""
+  },
+  "author": "Flo | shyrack",
+  "license": "MIT"
+}
