@@ -2,15 +2,19 @@
   "name": "martatoro-bot",
   "version": "0.0.1",
   "description": "Just a Discord bot to play YouTube audios?",
-  "main": "src/index.ts",
+  "main": "./src/index.ts",
   "scripts": {
-    "build": "",
-    "dev": "",
-    "start": ""
+    "build": "tsc --esModuleInterop",
+    "dev": "nodemon",
+    "devStart": "ts-node ./src/index.ts",
+    "format": "prettier --write --ext .ts .",
+    "start": "npm run build && node --experimental-modules ./dist/src/index.js"
   },
   "author": "Flo | shyrack",
   "license": "MIT",
   "devDependencies": {
+    "nodemon": "^2.0.15",
+    "prettier": "^2.5.0",
     "typescript": "^4.5.2"
   },
   "dependencies": {
