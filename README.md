@@ -55,7 +55,7 @@ Please visit my Discord server and send a message with your error into the right
 If you have found a bug, feel free to create a new issue.
 
 
-## :arrow_forward: Support me :heart::
+## :heart: Support me:
 
 ### :stop_button: Visit my Discord server ( No salt, only sugar. )
 Coming soon
