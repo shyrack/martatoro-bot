@@ -4,10 +4,18 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { ClientIdError } from "../errors/ClientIdError";
+import { executePlayCommand } from "./play";
 
 export namespace Commands {
   const commands = _.map(
-    [new SlashCommandBuilder().setName("test").setDescription("some test command")],
+    [
+      new SlashCommandBuilder()
+        .setName("play")
+        .setDescription("Play a YouTube video or livestream.")
+        .addStringOption((option) =>
+          option.setName("link").setDescription("Enter a YouTube link").setRequired(true),
+        ),
+    ],
     (command) => command.toJSON(),
   );
   const registerCommands = (rest: REST, clientId: string, guildId: string) => {
@@ -17,6 +25,16 @@ export namespace Commands {
       })
       .then(() => console.log("Successfully registered application commands."))
       .catch(console.error);
+  };
+  const handleCommand = (interaction: Discord.CommandInteraction<Discord.CacheType>) => {
+    const { commandName } = interaction;
+    switch (commandName) {
+      case "play":
+        executePlayCommand(interaction);
+        break;
+      default:
+        return;
+    }
   };
   export const initialize = (client: Discord.Client, rest: REST) => {
     client.on("guildCreate", (guild) => {
@@ -34,6 +52,11 @@ export namespace Commands {
         client.guilds.cache.forEach((guild) => registerCommands(rest, clientId, guild.id));
       } else {
         throw new ClientIdError();
+      }
+    });
+    client.on("interactionCreate", async (interaction) => {
+      if (interaction.isCommand()) {
+        handleCommand(interaction);
       }
     });
   };
