@@ -11,9 +11,12 @@ export namespace Commands {
     [
       new SlashCommandBuilder()
         .setName("play")
-        .setDescription("Play a YouTube video or livestream.")
+        .setDescription("Plays a YouTube video or livestream.")
         .addStringOption((option) =>
-          option.setName("link").setDescription("Enter a YouTube link").setRequired(true),
+          option
+            .setName("link")
+            .setDescription("Enter a YouTube link or a search term")
+            .setRequired(true),
         ),
     ],
     (command) => command.toJSON(),
