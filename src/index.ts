@@ -10,7 +10,9 @@ if (token === undefined) {
 }
 
 export const rest = new REST({}).setToken(token);
-export const client = new Discord.Client({ intents: [Discord.Intents.FLAGS.GUILDS] });
+export const client = new Discord.Client({
+  intents: [Discord.Intents.FLAGS.GUILDS],
+});
 
 client.login(token);
 
