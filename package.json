@@ -7,7 +7,7 @@
     "build": "tsc --esModuleInterop",
     "dev": "nodemon",
     "devStart": "ts-node ./src/index.ts",
-    "format": "prettier --write --ext .ts .",
+    "format": "prettier --write",
     "start": "npm run build && node --experimental-modules ./dist/src/index.js"
   },
   "author": "Flo | shyrack",
@@ -23,6 +23,9 @@
     "@discordjs/rest": "^0.1.0-canary.0",
     "discord-api-types": "^0.25.2",
     "discord.js": "^13.3.1",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "yt-search": "^2.10.2",
+    "ytdl-core": "^4.9.1",
+    "ytdl-core-discord": "^1.3.1"
   }
 }
