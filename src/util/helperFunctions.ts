@@ -1,19 +1,12 @@
 import * as play from "play-dl";
 
-function typeOfReturn<A, B>(fn: (a: A) => B) {
-  return {} as B;
-}
-
-const validationReturn = typeOfReturn(play.validate);
-type validationReturnType = typeof validationReturn;
-
-const isPlayList = async (validationPromise: validationReturnType) => {
+const isPlayList = async (validationPromise: ReturnType<typeof play.validate>) => {
   const validation = await validationPromise;
   if (validation === false) return false;
   return validation.includes("playlist");
 };
 
-const isAlbum = async (validationPromise: validationReturnType) => {
+const isAlbum = async (validationPromise: ReturnType<typeof play.validate>) => {
   const validation = await validationPromise;
   if (validation === false) return false;
   return validation.includes("album");
