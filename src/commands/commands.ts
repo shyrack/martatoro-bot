@@ -21,6 +21,7 @@ export namespace Commands {
     ],
     (command) => command.toJSON(),
   );
+
   const registerCommands = (rest: REST, clientId: string, guildId: string) => {
     rest
       .put(Routes.applicationGuildCommands(clientId, guildId), {
@@ -29,6 +30,7 @@ export namespace Commands {
       .then(() => console.log("Successfully registered application commands."))
       .catch(console.error);
   };
+
   const handleCommand = (interaction: Discord.CommandInteraction<Discord.CacheType>) => {
     const { commandName } = interaction;
     switch (commandName) {
@@ -39,6 +41,7 @@ export namespace Commands {
         return;
     }
   };
+
   export const initialize = (client: Discord.Client, rest: REST) => {
     client.on("guildCreate", (guild) => {
       const clientId = client.user?.id;
@@ -49,6 +52,7 @@ export namespace Commands {
         throw new ClientIdError();
       }
     });
+
     client.on("ready", () => {
       const clientId = client.user?.id;
       if (clientId !== undefined) {
@@ -57,6 +61,7 @@ export namespace Commands {
         throw new ClientIdError();
       }
     });
+
     client.on("interactionCreate", async (interaction) => {
       if (interaction.isCommand()) {
         handleCommand(interaction);
