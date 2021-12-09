@@ -1,6 +1,5 @@
 import Discord from "discord.js";
-import ytdl from "ytdl-core";
-import { getLinkFromInput } from "../util/helperFunctions";
+import { getInfoFromInput } from "../util/helperFunctions";
 
 export const executePlayCommand = async (
   interaction: Discord.CommandInteraction<Discord.CacheType>,
@@ -8,12 +7,7 @@ export const executePlayCommand = async (
   const { guildId, member, options } = interaction;
   const input = options.getString("link");
   if (input !== null) {
-    const link = await getLinkFromInput(input);
-    if (link !== undefined) {
-      // TODO: Get song from Url
-    } else {
-      interaction.reply("Sorry, we cound't find a video for you.");
-    }
+    const info = await getInfoFromInput(input);
   } else {
     interaction.reply("Sorry, we couldn't find a YouTube link or search term.");
   }
