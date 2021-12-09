@@ -1,21 +1,19 @@
 import * as play from "play-dl";
 
-const isPlayList = async (validationPromise: ReturnType<typeof play.validate>) => {
-  const validation = await validationPromise;
-  if (validation === false) return false;
-  return validation.includes("playlist");
-};
-
-const isAlbum = async (validationPromise: ReturnType<typeof play.validate>) => {
-  const validation = await validationPromise;
-  if (validation === false) return false;
-  return validation.includes("album");
+const getInfoFromSearch = async (term: string) => {
+  const youtubeSearchResult = await play.search(term, {
+    source: {
+      youtube: "video",
+    },
+  });
+  return youtubeSearchResult.shift();
 };
 
 export const getInfoFromInput = async (input: string) => {
   const validation = await play.validate(input);
-  if (validation !== false) {
-    const info = await play.video_info(input);
-    console.log("info", info);
-  }
+  if (validation === false) return;
+  const info = validation === "search" ? await getInfoFromSearch(input) : await play.deezer(input);
+  if (info === undefined) return;
+  console.log("info", info);
+  return info;
 };
