@@ -34,7 +34,7 @@ This Discord bot allows you to listen to YouTube videos. Requires node.
 | Command | Purpose |
 |-|-|
 | ```build``` | Compiles your code into your dist folder. |
-| ```dev``` | Launches the Discord bot with ```nodemon``` for developers. |
+| ```dev``` | Launches the Discord bot with ```nodemon``` for developers. (recommended) |
 | ```devStart``` | Launches the Discord bot without ```nodemon``` for developers. |
 | ```format``` | Formats the code for developers. |
 | ```start``` | Compiles the code and starts the bot for production. |

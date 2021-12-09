@@ -1,4 +1,15 @@
+import Discord from "discord.js";
 import * as play from "play-dl";
+
+const formatDuration = (seconds: number) => {
+  if (seconds === 0) {
+    return "livestream";
+  } else if (seconds < 3600) {
+    return new Date(seconds * 1000).toISOString().substr(14, 5);
+  } else {
+    return new Date(seconds * 1000).toISOString().substr(11, 8);
+  }
+};
 
 const getInfoFromSearch = async (term: string) => {
   const youtubeSearchResults = await play.search(term, {
@@ -21,4 +32,36 @@ export const getInfoFromInput = async (input: string) => {
     validation === "search" ? await getInfoFromSearch(input) : await play.video_info(input);
   if (info === undefined) return;
   return info;
+};
+
+export const getEmbedFromInfo = (
+  videoDetails: play.YouTubeVideo,
+  description: string,
+  member: Discord.GuildMember,
+) => {
+  const { channel, durationInSec, thumbnails, title, uploadedAt, url } = videoDetails;
+  const embed = new Discord.MessageEmbed().setColor("#0088aa");
+  embed.setTitle(title ?? "");
+  embed.setURL(url);
+  embed.setThumbnail(thumbnails[0].url);
+  embed.setDescription(description);
+  embed.addFields(
+    {
+      name: "Videolänge:",
+      value: formatDuration(durationInSec).toString(),
+      inline: true,
+    },
+    {
+      name: "Hochgeladen von:",
+      value: channel !== undefined ? channel.name ?? "" : "",
+      inline: true,
+    },
+    { name: "Hochgeladen am:", value: uploadedAt ?? "", inline: true },
+    {
+      name: "Hinzugefügt von:",
+      value: member.nickname ?? member.displayName,
+      inline: true,
+    },
+  );
+  return embed;
 };
