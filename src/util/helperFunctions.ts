@@ -36,11 +36,11 @@ export const getInfoFromInput = async (input: string) => {
 };
 
 export const getEmbedFromInfo = (
-  info: InfoData,
+  videoDetails: play.YouTubeVideo,
   description: string,
   member: Discord.GuildMember,
 ) => {
-  const { title, url, thumbnails, durationInSec, channel, uploadedAt } = info.video_details;
+  const { channel, durationInSec, thumbnails, title, uploadedAt, url } = videoDetails;
   const embed = new Discord.MessageEmbed().setColor("#0088aa");
   embed.setTitle(title ?? "");
   embed.setURL(url);
