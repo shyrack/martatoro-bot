@@ -1,6 +1,5 @@
 import Discord from "discord.js";
 import * as play from "play-dl";
-import { InfoData } from "play-dl/dist/YouTube/utils/constants";
 
 const formatDuration = (seconds: number) => {
   if (seconds === 0) {
@@ -60,7 +59,7 @@ export const getEmbedFromInfo = (
     { name: "Hochgeladen am:", value: uploadedAt ?? "", inline: true },
     {
       name: "Hinzugefügt von:",
-      value: member.nickname !== null ? member.nickname : member.displayName,
+      value: member.nickname ?? member.displayName,
       inline: true,
     },
   );
