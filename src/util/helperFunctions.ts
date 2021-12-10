@@ -15,9 +15,9 @@ const formatDuration = (seconds: number) => {
   if (seconds === 0) {
     return "livestream";
   } else if (seconds < 3600) {
-    return new Date(seconds * 1000).toISOString().substr(14, 5);
+    return new Date(seconds * 1000).toISOString().substring(14, 5);
   } else {
-    return new Date(seconds * 1000).toISOString().substr(11, 8);
+    return new Date(seconds * 1000).toISOString().substring(11, 8);
   }
 };
 
