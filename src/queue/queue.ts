@@ -26,7 +26,7 @@ export namespace Queue {
     const joinVoiceChannel = (channel: Discord.VoiceChannel) => {
       const currentConnection = DiscordVoice.getVoiceConnection(guildId);
       const guild = client.guilds.cache.get(guildId);
-      if (currentConnection !== undefined && guild !== undefined) {
+      if (currentConnection === undefined && guild !== undefined) {
         const voiceConnection = DiscordVoice.joinVoiceChannel({
           adapterCreator: guild.voiceAdapterCreator,
           channelId: channel.id,
