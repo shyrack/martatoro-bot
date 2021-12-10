@@ -1,5 +1,9 @@
 import Discord from "discord.js";
+import DiscordVoice from "@discordjs/voice";
 import * as play from "play-dl";
+import { InfoData } from "play-dl/dist/YouTube/utils/constants";
+
+export const playAudio = (song: InfoData, audioPlayer: DiscordVoice.AudioPlayer) => {};
 
 const formatDuration = (seconds: number) => {
   if (seconds === 0) {
