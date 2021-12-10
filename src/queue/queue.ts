@@ -1,22 +1,6 @@
-import Discord from "discord.js";
 import DiscordVoice from "@discordjs/voice";
-import * as play from "play-dl";
-import { InfoData } from "play-dl/dist/YouTube/utils/constants";
 import { playAudio } from "../util/helperFunctions";
-
-type Song = {
-  member: Discord.GuildMember;
-  infoData: InfoData;
-};
-
-type MusicQueue = {
-  audioPlayer: DiscordVoice.AudioPlayer;
-  currentSong: Song | null;
-  guildId: string;
-  isPaused: boolean;
-  songs: Song[];
-  voiceConnection: DiscordVoice.VoiceConnection | null;
-};
+import { MusicQueue, Song } from "../util/types";
 
 const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): MusicQueue => {
   const musicQueue: MusicQueue = {
@@ -40,7 +24,7 @@ export namespace Queue {
     const addSong = (song: Song) => {
       if (guildQueue.currentSong === null) {
         guildQueue.currentSong = song;
-        playAudio(song.infoData, guildQueue.audioPlayer);
+        playAudio(song, guildQueue.audioPlayer);
       } else {
         guildQueue.songs.push(song);
       }
