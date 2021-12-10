@@ -1,5 +1,15 @@
 import Discord from "discord.js";
+import DiscordVoice from "@discordjs/voice";
 import * as play from "play-dl";
+import { Song } from "./types";
+
+export const playAudio = async (song: Song, audioPlayer: DiscordVoice.AudioPlayer) => {
+  const streamData = await play.stream_from_info(song.infoData);
+  const audioResource = DiscordVoice.createAudioResource(streamData.stream, {
+    inputType: streamData.type,
+  });
+  audioPlayer.play(audioResource);
+};
 
 const formatDuration = (seconds: number) => {
   if (seconds === 0) {

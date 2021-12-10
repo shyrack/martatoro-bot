@@ -21,8 +21,10 @@
   "dependencies": {
     "@discordjs/builders": "^0.9.0",
     "@discordjs/rest": "^0.1.0-canary.0",
+    "@discordjs/voice": "^0.7.5",
     "discord-api-types": "^0.25.2",
     "discord.js": "^13.3.1",
+    "ffmpeg-static": "^4.4.0",
     "lodash": "^4.17.21",
     "play-dl": "^1.4.8"
   }
