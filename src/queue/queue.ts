@@ -1,4 +1,6 @@
+import Discord from "discord.js";
 import DiscordVoice from "@discordjs/voice";
+import { client } from "..";
 import { playAudio } from "../util/helperFunctions";
 import { MusicQueue, Song } from "../util/types";
 
@@ -21,6 +23,20 @@ export namespace Queue {
   export const getMusicQueue = (guildId: string) => {
     const guildQueue = musicQueues.get(guildId) ?? initMusicQueue(guildId, musicQueues);
 
+    const joinVoiceChannel = (channel: Discord.VoiceChannel) => {
+      const currentConnection = DiscordVoice.getVoiceConnection(guildId);
+      const guild = client.guilds.cache.get(guildId);
+      if (currentConnection !== undefined && guild !== undefined) {
+        const voiceConnection = DiscordVoice.joinVoiceChannel({
+          adapterCreator: guild.voiceAdapterCreator,
+          channelId: channel.id,
+          guildId: guildId,
+        });
+        voiceConnection.subscribe(guildQueue.audioPlayer);
+        guildQueue.voiceConnection = voiceConnection;
+      }
+    };
+
     const addSong = (song: Song) => {
       if (guildQueue.currentSong === null) {
         guildQueue.currentSong = song;
@@ -32,6 +48,7 @@ export namespace Queue {
 
     return {
       addSong: addSong,
+      joinVoiceChannel: joinVoiceChannel,
       queueMap: guildQueue,
     };
   };
