@@ -11,6 +11,7 @@ const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): 
     guildId: guildId,
     isPaused: true,
     songs: [],
+    voiceChannel: null,
     voiceConnection: null,
   };
   musicQueues.set(guildId, musicQueue);
@@ -33,11 +34,13 @@ export namespace Queue {
           guildId: guildId,
         });
         voiceConnection.subscribe(guildQueue.audioPlayer);
+        guildQueue.voiceChannel = channel;
         guildQueue.voiceConnection = voiceConnection;
       }
     };
 
-    const addSong = (song: Song) => {
+    const addSong = (channel: Discord.VoiceChannel, song: Song) => {
+      joinVoiceChannel(channel);
       if (guildQueue.currentSong === null) {
         guildQueue.currentSong = song;
         playAudio(song, guildQueue.audioPlayer);
@@ -48,8 +51,8 @@ export namespace Queue {
 
     return {
       addSong: addSong,
-      joinVoiceChannel: joinVoiceChannel,
       queueMap: guildQueue,
+      voiceChannel: guildQueue.voiceChannel,
     };
   };
 }
