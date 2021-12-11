@@ -4,7 +4,9 @@ import * as play from "play-dl";
 import { Song } from "./types";
 
 export const playAudio = async (song: Song, audioPlayer: DiscordVoice.AudioPlayer) => {
-  let streamData = await play.stream_from_info(song.infoData);
+  let streamData = await play.stream_from_info(song.infoData, {
+    quality: 2,
+  });
   const audioResource = DiscordVoice.createAudioResource(streamData.stream, {
     inputType: streamData.type,
   });
