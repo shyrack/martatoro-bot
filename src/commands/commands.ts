@@ -5,6 +5,7 @@ import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { ClientIdError } from "../errors/ClientIdError";
 import { executePlayCommand } from "./play";
+import { executeStopCommand } from "./stop";
 
 export namespace Commands {
   const commands = _.map(
@@ -18,6 +19,7 @@ export namespace Commands {
             .setDescription("Enter a YouTube link or a search term")
             .setRequired(true),
         ),
+      new SlashCommandBuilder().setName("stop").setDescription("Stops the current song."),
     ],
     (command) => command.toJSON(),
   );
@@ -36,6 +38,9 @@ export namespace Commands {
     switch (commandName) {
       case "play":
         executePlayCommand(interaction);
+        break;
+      case "stop":
+        executeStopCommand(interaction);
         break;
       default:
         return;

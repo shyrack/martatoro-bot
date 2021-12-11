@@ -13,6 +13,7 @@ export type MusicQueue = {
   currentSong: Song | null;
   guildId: string;
   isPaused: boolean;
+  playerSubscription: DiscordVoice.PlayerSubscription | undefined;
   songs: Song[];
   voiceChannel: Discord.VoiceChannel | Discord.StageChannel | null;
   voiceConnection: DiscordVoice.VoiceConnection | null;

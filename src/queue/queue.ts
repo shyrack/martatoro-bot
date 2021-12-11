@@ -11,12 +11,13 @@ const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): 
     currentSong: null,
     guildId: guildId,
     isPaused: true,
+    playerSubscription: undefined,
     songs: [],
     voiceChannel: null,
     voiceConnection: null,
   };
   musicQueues.set(guildId, musicQueue);
-  AudioPlayerEvents.registerListener(guildId, musicQueue);
+  AudioPlayerEvents.registerListener(guildId);
   return musicQueue;
 };
 
@@ -29,15 +30,34 @@ export namespace Queue {
     const joinVoiceChannel = (channel: Discord.VoiceChannel) => {
       const currentConnection = DiscordVoice.getVoiceConnection(guildId);
       const guild = client.guilds.cache.get(guildId);
-      if (currentConnection === undefined && guild !== undefined) {
+      if (
+        (currentConnection === undefined ||
+          currentConnection.state.status === DiscordVoice.VoiceConnectionStatus.Disconnected) &&
+        guild !== undefined
+      ) {
         const voiceConnection = DiscordVoice.joinVoiceChannel({
           adapterCreator: guild.voiceAdapterCreator,
           channelId: channel.id,
           guildId: guildId,
         });
-        voiceConnection.subscribe(guildQueue.audioPlayer);
+        const playerSubscription = voiceConnection.subscribe(guildQueue.audioPlayer);
+        guildQueue.playerSubscription = playerSubscription;
         guildQueue.voiceChannel = channel;
         guildQueue.voiceConnection = voiceConnection;
+      }
+    };
+
+    const leaveVoiceChannel = () => {
+      const { audioPlayer, playerSubscription, voiceConnection } = guildQueue;
+      if (voiceConnection !== null) {
+        audioPlayer.stop();
+        voiceConnection.disconnect();
+        guildQueue.voiceChannel = null;
+        guildQueue.voiceConnection = null;
+        if (playerSubscription !== undefined) {
+          playerSubscription.unsubscribe();
+          guildQueue.playerSubscription = undefined;
+        }
       }
     };
 
@@ -51,9 +71,17 @@ export namespace Queue {
       }
     };
 
+    const stop = () => {
+      leaveVoiceChannel();
+      guildQueue.currentSong = null;
+      guildQueue.songs = [];
+    };
+
     return {
       addSong: addSong,
+      leaveVoiceChannel: leaveVoiceChannel,
       queueMap: guildQueue,
+      stop: stop,
       voiceChannel: guildQueue.voiceChannel,
     };
   };
