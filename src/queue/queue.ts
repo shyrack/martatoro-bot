@@ -2,6 +2,7 @@ import Discord from "discord.js";
 import * as DiscordVoice from "@discordjs/voice";
 import { client } from "..";
 import { playAudio } from "../util/helperFunctions";
+import { AudioPlayerEvents } from "../events/AudioPlayerEvents";
 import { MusicQueue, Song } from "../util/types";
 
 const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): MusicQueue => {
@@ -15,6 +16,7 @@ const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): 
     voiceConnection: null,
   };
   musicQueues.set(guildId, musicQueue);
+  AudioPlayerEvents.registerListener(guildId, musicQueue);
   return musicQueue;
 };
 
