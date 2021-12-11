@@ -28,8 +28,6 @@ export const executePlayCommand = async (
         interaction.reply({ embeds: [embed] });
         return;
       }
-    } else {
-      // TODO
     }
   }
   interaction.reply("Sorry, we couldn't find a YouTube link or search term.");
