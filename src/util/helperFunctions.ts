@@ -4,7 +4,9 @@ import * as play from "play-dl";
 import { Song } from "./types";
 
 export const playAudio = async (song: Song, audioPlayer: DiscordVoice.AudioPlayer) => {
-  let streamData = await play.stream_from_info(song.infoData);
+  let streamData = await play.stream_from_info(song.infoData, {
+    quality: 2,
+  });
   const audioResource = DiscordVoice.createAudioResource(streamData.stream, {
     inputType: streamData.type,
   });
@@ -48,17 +50,14 @@ export const getEmbedFromInfo = (
   videoDetails: play.YouTubeVideo,
   description: string,
   member: Discord.GuildMember,
+  queueLength: number,
 ) => {
   const { channel, durationInSec, thumbnails, title, uploadedAt, url } = videoDetails;
   const embed = new Discord.MessageEmbed().setColor("#0088aa");
-  embed.setTitle(title ?? "");
-  embed.setURL(url);
-  embed.setThumbnail(thumbnails[0].url);
-  embed.setDescription(description);
-  embed.addFields(
+  const fields: Discord.EmbedFieldData[] = [
     {
       name: "Videolänge:",
-      value: formatDuration(durationInSec).toString(),
+      value: formatDuration(durationInSec),
       inline: true,
     },
     {
@@ -72,6 +71,17 @@ export const getEmbedFromInfo = (
       value: member.nickname ?? member.displayName,
       inline: true,
     },
-  );
+  ];
+  if (queueLength !== 0)
+    fields.push({
+      name: "Warteschlange:",
+      value: queueLength.toString(),
+      inline: true,
+    });
+  embed.setTitle(title ?? "");
+  embed.setURL(url);
+  embed.setThumbnail(thumbnails[0].url);
+  embed.setDescription(description);
+  embed.addFields(fields);
   return embed;
 };
