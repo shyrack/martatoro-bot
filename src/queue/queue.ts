@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import DiscordVoice from "@discordjs/voice";
+import * as DiscordVoice from "@discordjs/voice";
 import { client } from "..";
 import { playAudio } from "../util/helperFunctions";
 import { MusicQueue, Song } from "../util/types";
