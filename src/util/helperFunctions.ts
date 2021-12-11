@@ -1,10 +1,10 @@
 import Discord from "discord.js";
-import DiscordVoice from "@discordjs/voice";
+import * as DiscordVoice from "@discordjs/voice";
 import * as play from "play-dl";
 import { Song } from "./types";
 
 export const playAudio = async (song: Song, audioPlayer: DiscordVoice.AudioPlayer) => {
-  const streamData = await play.stream_from_info(song.infoData);
+  let streamData = await play.stream_from_info(song.infoData);
   const audioResource = DiscordVoice.createAudioResource(streamData.stream, {
     inputType: streamData.type,
   });
@@ -15,9 +15,9 @@ const formatDuration = (seconds: number) => {
   if (seconds === 0) {
     return "livestream";
   } else if (seconds < 3600) {
-    return new Date(seconds * 1000).toISOString().substr(14, 5);
+    return new Date(seconds * 1000).toISOString().substring(14, 19);
   } else {
-    return new Date(seconds * 1000).toISOString().substr(11, 8);
+    return new Date(seconds * 1000).toISOString().substring(11, 19);
   }
 };
 

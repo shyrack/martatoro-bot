@@ -1,5 +1,5 @@
 import Discord from "discord.js";
-import DiscordVoice from "@discordjs/voice";
+import * as DiscordVoice from "@discordjs/voice";
 import { InfoData } from "play-dl/dist/YouTube/utils/constants";
 
 export type Song = {
@@ -14,5 +14,6 @@ export type MusicQueue = {
   guildId: string;
   isPaused: boolean;
   songs: Song[];
+  voiceChannel: Discord.VoiceChannel | Discord.StageChannel | null;
   voiceConnection: DiscordVoice.VoiceConnection | null;
 };

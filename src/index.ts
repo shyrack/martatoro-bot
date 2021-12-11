@@ -11,7 +11,7 @@ if (token === undefined) {
 
 export const rest = new REST({}).setToken(token);
 export const client = new Discord.Client({
-  intents: [Discord.Intents.FLAGS.GUILDS],
+  intents: [Discord.Intents.FLAGS.GUILDS, Discord.Intents.FLAGS.GUILD_VOICE_STATES],
 });
 
 client.login(token);
