@@ -14,7 +14,7 @@ export namespace Commands {
         .setDescription("Plays a YouTube video or livestream.")
         .addStringOption((option) =>
           option
-            .setName("link")
+            .setName("input")
             .setDescription("Enter a YouTube link or a search term")
             .setRequired(true),
         ),

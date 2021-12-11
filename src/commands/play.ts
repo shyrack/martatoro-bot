@@ -6,7 +6,7 @@ export const executePlayCommand = async (
   interaction: Discord.CommandInteraction<Discord.CacheType>,
 ) => {
   const { guildId, member, options } = interaction;
-  const input = options.getString("link");
+  const input = options.getString("input");
   if (input !== null && member instanceof Discord.GuildMember) {
     const memberVoiceChannel = member.voice.channel;
     if (memberVoiceChannel instanceof Discord.VoiceChannel) {
