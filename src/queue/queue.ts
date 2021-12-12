@@ -10,7 +10,7 @@ const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): 
     audioPlayer: DiscordVoice.createAudioPlayer(),
     currentSong: null,
     guildId: guildId,
-    isPaused: true,
+    isPaused: false,
     playerSubscription: undefined,
     songs: [],
     voiceChannel: null,
@@ -77,7 +77,10 @@ export namespace Queue {
       guildQueue.songs = [];
     };
 
-    const skip = () => {};
+    const skip = () => {
+      const { audioPlayer } = guildQueue;
+      audioPlayer.stop();
+    };
 
     return {
       addSong: addSong,
