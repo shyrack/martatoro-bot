@@ -35,15 +35,15 @@ export namespace Commands {
 
   const handleCommand = (interaction: Discord.CommandInteraction<Discord.CacheType>) => {
     const { commandName } = interaction;
-    switch (commandName) {
-      case "play":
-        executePlayCommand(interaction);
-        break;
-      case "stop":
-        executeStopCommand(interaction);
-        break;
-      default:
-        return;
+    const commandExecutors: {
+      [key: string]: (interaction: Discord.CommandInteraction<Discord.CacheType>) => Promise<void>;
+    } = {
+      play: executePlayCommand,
+      stop: executeStopCommand,
+    };
+    const commandExecutor = commandExecutors[commandName];
+    if (commandExecutor !== undefined) {
+      commandExecutor(interaction);
     }
   };
 
