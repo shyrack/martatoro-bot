@@ -6,6 +6,7 @@ import { Routes } from "discord-api-types/v9";
 import { ClientIdError } from "../errors/ClientIdError";
 import { executePlayCommand } from "./play";
 import { executeStopCommand } from "./stop";
+import { executeSkipCommand } from "./skip";
 
 export namespace Commands {
   const commands = _.map(
@@ -20,6 +21,7 @@ export namespace Commands {
             .setRequired(true),
         ),
       new SlashCommandBuilder().setName("stop").setDescription("Stops the current song."),
+      new SlashCommandBuilder().setName("skip").setDescription("Skips the currently playing song."),
     ],
     (command) => command.toJSON(),
   );
@@ -40,6 +42,7 @@ export namespace Commands {
     } = {
       play: executePlayCommand,
       stop: executeStopCommand,
+      skip: executeSkipCommand,
     };
     const commandExecutor = commandExecutors[commandName];
     if (commandExecutor !== undefined) {
