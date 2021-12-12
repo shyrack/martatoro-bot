@@ -2,7 +2,7 @@ import Discord from "discord.js";
 import * as DiscordVoice from "@discordjs/voice";
 import { client } from "..";
 import { playAudio } from "../util/helperFunctions";
-import { AudioPlayerEvents } from "../events/AudioPlayerEvents";
+import { AudioPlayerEvents } from "../events/audioPlayerEvents";
 import { MusicQueue, Song } from "../util/types";
 
 const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): MusicQueue => {
@@ -10,7 +10,7 @@ const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): 
     audioPlayer: DiscordVoice.createAudioPlayer(),
     currentSong: null,
     guildId: guildId,
-    isPaused: true,
+    isPaused: false,
     playerSubscription: undefined,
     songs: [],
     voiceChannel: null,
@@ -77,10 +77,16 @@ export namespace Queue {
       guildQueue.songs = [];
     };
 
+    const skip = () => {
+      const { audioPlayer } = guildQueue;
+      audioPlayer.stop();
+    };
+
     return {
       addSong: addSong,
       leaveVoiceChannel: leaveVoiceChannel,
       queueMap: guildQueue,
+      skip: skip,
       stop: stop,
       voiceChannel: guildQueue.voiceChannel,
     };

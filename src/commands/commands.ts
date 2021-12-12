@@ -6,6 +6,9 @@ import { Routes } from "discord-api-types/v9";
 import { ClientIdError } from "../errors/ClientIdError";
 import { executePlayCommand } from "./play";
 import { executeStopCommand } from "./stop";
+import { executeSkipCommand } from "./skip";
+import { executePauseCommand } from "./pause";
+import { executeUnpauseCommand } from "./unpause";
 
 export namespace Commands {
   const commands = _.map(
@@ -19,7 +22,10 @@ export namespace Commands {
             .setDescription("Enter a YouTube link or a search term")
             .setRequired(true),
         ),
-      new SlashCommandBuilder().setName("stop").setDescription("Stops the current song."),
+      new SlashCommandBuilder().setName("stop").setDescription("Stops the player."),
+      new SlashCommandBuilder().setName("skip").setDescription("Skips the currently playing song."),
+      new SlashCommandBuilder().setName("pause").setDescription("Pauses the player."),
+      new SlashCommandBuilder().setName("unpause").setDescription("Unpauses the player."),
     ],
     (command) => command.toJSON(),
   );
@@ -35,15 +41,18 @@ export namespace Commands {
 
   const handleCommand = (interaction: Discord.CommandInteraction<Discord.CacheType>) => {
     const { commandName } = interaction;
-    switch (commandName) {
-      case "play":
-        executePlayCommand(interaction);
-        break;
-      case "stop":
-        executeStopCommand(interaction);
-        break;
-      default:
-        return;
+    const commandExecutors: {
+      [key: string]: (interaction: Discord.CommandInteraction<Discord.CacheType>) => Promise<void>;
+    } = {
+      play: executePlayCommand,
+      stop: executeStopCommand,
+      skip: executeSkipCommand,
+      pause: executePauseCommand,
+      unpause: executeUnpauseCommand,
+    };
+    const commandExecutor = commandExecutors[commandName];
+    if (commandExecutor !== undefined) {
+      commandExecutor(interaction);
     }
   };
 

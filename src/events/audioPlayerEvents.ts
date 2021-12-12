@@ -1,7 +1,6 @@
 import * as DiscordVoice from "@discordjs/voice";
 import { Queue } from "../queue/queue";
 import { playAudio } from "../util/helperFunctions";
-import { MusicQueue } from "../util/types";
 
 export namespace AudioPlayerEvents {
   const audioPlayers = new Map<string, DiscordVoice.AudioPlayer>();
