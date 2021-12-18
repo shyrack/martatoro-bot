@@ -1,7 +1,7 @@
 import Discord from "discord.js";
 import _ from "lodash";
 import { Queue } from "../queue/queue";
-import { getEmbedFromInfo, getInfoFromInput } from "../util/helperFunctions";
+import { getEmbedFromInfo, getInfosFromInput } from "../util/helperFunctions";
 
 export const executePlayCommand = async (
   interaction: Discord.CommandInteraction<Discord.CacheType>,
@@ -11,21 +11,25 @@ export const executePlayCommand = async (
   if (input !== null && member instanceof Discord.GuildMember) {
     const memberVoiceChannel = member.voice.channel;
     if (memberVoiceChannel instanceof Discord.VoiceChannel) {
-      const info = await getInfoFromInput(input);
-      if (info !== undefined) {
+      const infos = await getInfosFromInput(input);
+      if (infos !== undefined) {
         const musicQueue = Queue.getMusicQueue(guildId);
-        musicQueue.addSong(memberVoiceChannel, {
-          infoData: info,
-          isLive: info.LiveStreamData.isLive,
-          member: member,
-        });
-        const embed = getEmbedFromInfo(
-          info.video_details,
-          "Song wurde zur Warteschlange hinzugefügt",
-          member,
-          _.size(musicQueue.queueMap.songs),
+        _.forEach(infos, (info) =>
+          musicQueue.addSong(memberVoiceChannel, {
+            infoData: info,
+            isLive: info.LiveStreamData.isLive,
+            member: member,
+          }),
         );
-        interaction.reply({ embeds: [embed] });
+        const embeds = _.map(infos, (info) =>
+          getEmbedFromInfo(
+            info.video_details,
+            "Song wurde zur Warteschlange hinzugefügt",
+            member,
+            _.size(musicQueue.queueMap.songs), // TODO: fix number of song in queue
+          ),
+        );
+        interaction.reply({ embeds: embeds });
         return;
       }
     }
