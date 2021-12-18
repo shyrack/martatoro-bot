@@ -31,7 +31,7 @@
     "ffmpeg-static": "^4.4.0",
     "lodash": "^4.17.21",
     "opusscript": "^0.0.8",
-    "play-dl": "^1.5.0",
+    "play-dl": "^1.6.1",
     "tweetnacl": "^1.0.3"
   }
 }
