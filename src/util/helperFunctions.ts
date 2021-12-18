@@ -14,14 +14,9 @@ export const playAudio = async (song: Song, audioPlayer: DiscordVoice.AudioPlaye
   audioPlayer.play(audioResource);
 };
 
-const validateYouTubePlaylist = async (input: ReturnType<typeof play.validate>) => {
+const validateYouTubePlaylist = async (input: Awaited<ReturnType<typeof play.validate>>) => {
   const validation = await input;
   return validation === "yt_playlist";
-};
-
-const validateSpotifyTracks = async (input: ReturnType<typeof play.validate>) => {
-  const validation = await input;
-  return validation === "sp_album" || validation === "sp_playlist";
 };
 
 const getInfoFromSearch = async (term: string) => {
@@ -43,17 +38,25 @@ const getInfosFromYouTubePlaylist = async (input: string) => {
   for (let i = 0; i < playlistInfo.total_pages; i++) {
     playlistInfos.push(...playlistInfo.page(i));
   }
-  return playlistInfos;
+  const videoInfos = await Promise.all(_.map(playlistInfos, (info) => play.video_info(info.url)));
+  return videoInfos;
 };
 
-export const getInfoFromInput = async (input: string) => {
+export const getInfosFromInput = async (input: string) => {
   const validation = await play.validate(input);
-  if (validation === false || (validation.includes("yt") === false && validation !== "search"))
-    return;
-  const info =
-    validation === "search" ? await getInfoFromSearch(input) : await play.video_info(input);
-  if (info === undefined) return;
-  return info;
+  const isPlaylist = await validateYouTubePlaylist(validation);
+  if (isPlaylist === true) {
+    const playlistInfos = await getInfosFromYouTubePlaylist(input);
+    return playlistInfos;
+  } else if (
+    validation !== false &&
+    (validation.includes("yt") === true || validation === "search")
+  ) {
+    const info =
+      validation === "search" ? await getInfoFromSearch(input) : await play.video_info(input);
+    if (info === undefined) return;
+    return [info];
+  }
 };
 
 export const getEmbedFromInfo = (
