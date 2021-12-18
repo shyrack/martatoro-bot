@@ -1,3 +1,4 @@
+import _ from "lodash";
 import Discord from "discord.js";
 import * as DiscordVoice from "@discordjs/voice";
 import * as play from "play-dl";
@@ -13,14 +14,14 @@ export const playAudio = async (song: Song, audioPlayer: DiscordVoice.AudioPlaye
   audioPlayer.play(audioResource);
 };
 
-const formatDuration = (seconds: number) => {
-  if (seconds === 0) {
-    return "livestream";
-  } else if (seconds < 3600) {
-    return new Date(seconds * 1000).toISOString().substring(14, 19);
-  } else {
-    return new Date(seconds * 1000).toISOString().substring(11, 19);
-  }
+const validateYouTubePlaylist = async (input: ReturnType<typeof play.validate>) => {
+  const validation = await input;
+  return validation === "yt_playlist";
+};
+
+const validateSpotifyTracks = async (input: ReturnType<typeof play.validate>) => {
+  const validation = await input;
+  return validation === "sp_album" || validation === "sp_playlist";
 };
 
 const getInfoFromSearch = async (term: string) => {
@@ -34,6 +35,15 @@ const getInfoFromSearch = async (term: string) => {
   if (url !== undefined) {
     return play.video_info(url);
   }
+};
+
+const getInfosFromYouTubePlaylist = async (input: string) => {
+  const playlistInfo = await play.playlist_info(input);
+  let playlistInfos: play.YouTubeVideo[] = [];
+  for (let i = 0; i < playlistInfo.total_pages; i++) {
+    playlistInfos.push(...playlistInfo.page(i));
+  }
+  return playlistInfos;
 };
 
 export const getInfoFromInput = async (input: string) => {
@@ -84,4 +94,14 @@ export const getEmbedFromInfo = (
   embed.setDescription(description);
   embed.addFields(fields);
   return embed;
+};
+
+const formatDuration = (seconds: number) => {
+  if (seconds === 0) {
+    return "livestream";
+  } else if (seconds < 3600) {
+    return new Date(seconds * 1000).toISOString().substring(14, 19);
+  } else {
+    return new Date(seconds * 1000).toISOString().substring(11, 19);
+  }
 };
