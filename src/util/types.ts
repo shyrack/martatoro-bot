@@ -1,9 +1,9 @@
 import Discord from "discord.js";
 import * as DiscordVoice from "@discordjs/voice";
-import { InfoData } from "play-dl/dist/YouTube/utils/constants";
+import * as play from "play-dl";
 
 export type Song = {
-  infoData: InfoData;
+  infoData: Awaited<ReturnType<typeof play.video_info>>;
   isLive: boolean;
   member: Discord.GuildMember;
 };
