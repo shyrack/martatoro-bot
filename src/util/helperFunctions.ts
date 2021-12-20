@@ -8,6 +8,7 @@ import { Playable } from "./types";
 
 export const playAudio = async (playable: Playable, audioPlayer: DiscordVoice.AudioPlayer) => {
   let stream = await ytdl(playable.urls[0], {
+    // TODO
     filter: "audioonly",
     quality: "highestaudio",
     liveBuffer: playable.isLive === true ? 1 << 11 : 0,
