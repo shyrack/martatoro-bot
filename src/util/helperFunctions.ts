@@ -8,6 +8,7 @@ import { Playable } from "./types";
 
 export const playAudio = async (playable: Playable, audioPlayer: DiscordVoice.AudioPlayer) => {
   let stream = await ytdl(playable.urls[0], {
+    // TODO
     filter: "audioonly",
     quality: "highestaudio",
     liveBuffer: playable.isLive === true ? 1 << 11 : 0,
@@ -20,7 +21,7 @@ export const playAudio = async (playable: Playable, audioPlayer: DiscordVoice.Au
   audioPlayer.play(audioResource);
 };
 
-const validate = (input: string) => {
+const validateInput = (input: string) => {
   const isPlaylist = ytpl.validateID(input);
   const isVideo = ytdl.validateURL(input);
   if (isPlaylist) return "playlist";
@@ -77,7 +78,7 @@ export const playableFromInput = async (
   input: string,
   member: Discord.GuildMember,
 ): Promise<Playable | undefined> => {
-  const validation = validate(input);
+  const validation = validateInput(input);
   return validation === "search"
     ? playableFromSearch(input, member)
     : validation === "video"
