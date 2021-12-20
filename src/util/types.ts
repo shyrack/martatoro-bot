@@ -1,20 +1,24 @@
 import Discord from "discord.js";
 import * as DiscordVoice from "@discordjs/voice";
-import { InfoData } from "play-dl/dist/YouTube/utils/constants";
 
-export type Song = {
-  infoData: InfoData;
+export type Playable = {
+  channel: string;
+  duration: number;
   isLive: boolean;
   member: Discord.GuildMember;
+  thumbnailUrl: string;
+  title: string;
+  uploadedAt: string;
+  urls: string[];
 };
 
 export type MusicQueue = {
   audioPlayer: DiscordVoice.AudioPlayer;
-  currentSong: Song | null;
+  currentSong: Playable | null;
   guildId: string;
   isPaused: boolean;
   playerSubscription: DiscordVoice.PlayerSubscription | undefined;
-  songs: Song[];
+  playables: Playable[];
   voiceChannel: Discord.VoiceChannel | Discord.StageChannel | null;
   voiceConnection: DiscordVoice.VoiceConnection | null;
 };

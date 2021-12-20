@@ -1,100 +1,129 @@
 import _ from "lodash";
 import Discord from "discord.js";
 import * as DiscordVoice from "@discordjs/voice";
-import * as play from "play-dl";
-import { Song } from "./types";
+import ytdl from "ytdl-core-discord";
+import yts from "yt-search";
+import ytpl from "ytpl";
+import { Playable } from "./types";
 
-export const playAudio = async (song: Song, audioPlayer: DiscordVoice.AudioPlayer) => {
-  let streamData = await play.stream_from_info(song.infoData, {
-    quality: 2,
+export const playAudio = async (playable: Playable, audioPlayer: DiscordVoice.AudioPlayer) => {
+  let stream = await ytdl(playable.urls[0], {
+    filter: "audioonly",
+    quality: "highestaudio",
+    liveBuffer: playable.isLive === true ? 1 << 11 : 0,
+    dlChunkSize: playable.isLive === true ? 1 << 10 : 1 << 27,
+    highWaterMark: playable.isLive === true ? 1 << 25 : 1 << 22,
   });
-  const audioResource = DiscordVoice.createAudioResource(streamData.stream, {
-    inputType: streamData.type,
+  const audioResource = DiscordVoice.createAudioResource(stream, {
+    inputType: DiscordVoice.StreamType.Opus,
   });
   audioPlayer.play(audioResource);
 };
 
-const validateYouTubePlaylist = async (input: ReturnType<typeof play.validate>) => {
-  const validation = await input;
-  return validation === "yt_playlist";
+const validate = (input: string) => {
+  const isPlaylist = ytpl.validateID(input);
+  const isVideo = ytdl.validateURL(input);
+  if (isPlaylist) return "playlist";
+  if (isVideo) return "video";
+  return "search";
 };
 
-const validateSpotifyTracks = async (input: ReturnType<typeof play.validate>) => {
-  const validation = await input;
-  return validation === "sp_album" || validation === "sp_playlist";
+const playableFromUrl = async (url: string, member: Discord.GuildMember): Promise<Playable> => {
+  const video = await ytdl.getBasicInfo(url);
+  const details = video.videoDetails;
+  return {
+    channel: details.ownerChannelName,
+    duration: -1,
+    isLive: details.isLiveContent,
+    member: member,
+    thumbnailUrl: _.find(details.thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "",
+    title: details.title,
+    uploadedAt: details.uploadDate,
+    urls: [details.video_url],
+  };
 };
 
-const getInfoFromSearch = async (term: string) => {
-  const youtubeSearchResults = await play.search(term, {
-    source: {
-      youtube: "video",
-    },
-  });
-  const result = youtubeSearchResults.shift();
-  const url = result?.url;
-  if (url !== undefined) {
-    return play.video_info(url);
-  }
-};
-
-const getInfosFromYouTubePlaylist = async (input: string) => {
-  const playlistInfo = await play.playlist_info(input);
-  let playlistInfos: play.YouTubeVideo[] = [];
-  for (let i = 0; i < playlistInfo.total_pages; i++) {
-    playlistInfos.push(...playlistInfo.page(i));
-  }
-  return playlistInfos;
-};
-
-export const getInfoFromInput = async (input: string) => {
-  const validation = await play.validate(input);
-  if (validation === false || (validation.includes("yt") === false && validation !== "search"))
-    return;
-  const info =
-    validation === "search" ? await getInfoFromSearch(input) : await play.video_info(input);
-  if (info === undefined) return;
-  return info;
-};
-
-export const getEmbedFromInfo = (
-  videoDetails: play.YouTubeVideo,
-  description: string,
+const playableFromYouTubePlaylist = async (
+  url: string,
   member: Discord.GuildMember,
-  queueLength: number,
-) => {
-  const { channel, durationInSec, thumbnails, title, uploadedAt, url } = videoDetails;
-  const embed = new Discord.MessageEmbed().setColor("#0088aa");
-  const fields: Discord.EmbedFieldData[] = [
-    {
-      name: "Videolänge:",
-      value: formatDuration(durationInSec),
-      inline: true,
-    },
-    {
-      name: "Hochgeladen von:",
-      value: channel !== undefined ? channel.name ?? "" : "",
-      inline: true,
-    },
-    { name: "Hochgeladen am:", value: uploadedAt ?? "", inline: true },
-    {
-      name: "Hinzugefügt von:",
-      value: member.nickname ?? member.displayName,
-      inline: true,
-    },
-  ];
-  if (queueLength !== 0)
-    fields.push({
-      name: "Warteschlange:",
-      value: queueLength.toString(),
-      inline: true,
-    });
-  embed.setTitle(title ?? "");
-  embed.setURL(url);
-  embed.setThumbnail(thumbnails[0].url);
-  embed.setDescription(description);
-  embed.addFields(fields);
-  return embed;
+): Promise<Playable> => {
+  const playlist = await ytpl(url, {
+    limit: Infinity,
+  });
+  return {
+    channel: playlist.author.name,
+    duration: -1,
+    isLive: false,
+    member: member,
+    thumbnailUrl: _.find(playlist.thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "",
+    title: playlist.title,
+    uploadedAt: playlist.lastUpdated,
+    urls: _.map(playlist.items, (item) => item.url),
+  };
 };
+
+const playableFromSearch = async (
+  term: string,
+  member: Discord.GuildMember,
+): Promise<Playable | undefined> => {
+  const results = await yts(term);
+  const videoUrl = results.videos.shift()?.url;
+  if (videoUrl !== undefined) {
+    return playableFromUrl(videoUrl, member);
+  }
+};
+
+export const playableFromInput = async (
+  input: string,
+  member: Discord.GuildMember,
+): Promise<Playable | undefined> => {
+  const validation = validate(input);
+  return validation === "search"
+    ? playableFromSearch(input, member)
+    : validation === "video"
+    ? playableFromUrl(input, member)
+    : playableFromYouTubePlaylist(input, member);
+};
+
+// export const getEmbedFromInfo = (
+//   videoDetails: string,
+//   description: string,
+//   member: Discord.GuildMember,
+//   queueLength: number,
+// ) => {
+//   const { channel, durationInSec, thumbnails, title, uploadedAt, url } = videoDetails;
+//   const embed = new Discord.MessageEmbed().setColor("#0088aa");
+//   const fields: Discord.EmbedFieldData[] = [
+//     {
+//       name: "Videolänge:",
+//       value: formatDuration(durationInSec),
+//       inline: true,
+//     },
+//     {
+//       name: "Hochgeladen von:",
+//       value: channel !== undefined ? channel.name ?? "" : "",
+//       inline: true,
+//     },
+//     { name: "Hochgeladen am:", value: uploadedAt ?? "", inline: true },
+//     {
+//       name: "Hinzugefügt von:",
+//       value: member.nickname ?? member.displayName,
+//       inline: true,
+//     },
+//   ];
+//   if (queueLength !== 0)
+//     fields.push({
+//       name: "Warteschlange:",
+//       value: queueLength.toString(),
+//       inline: true,
+//     });
+//   embed.setTitle(title ?? "");
+//   embed.setURL(url);
+//   embed.setThumbnail(thumbnails[0].url);
+//   embed.setDescription(description);
+//   embed.addFields(fields);
+//   return embed;
+// };
 
 const formatDuration = (seconds: number) => {
   if (seconds === 0) {

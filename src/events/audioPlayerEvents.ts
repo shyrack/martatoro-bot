@@ -7,15 +7,15 @@ export namespace AudioPlayerEvents {
 
   export const registerListener = (guildId: string) => {
     const musicQueue = Queue.getMusicQueue(guildId);
-    const { audioPlayer, songs } = musicQueue.queueMap;
+    const { audioPlayer, playables } = musicQueue.queueMap;
     audioPlayers.set(guildId, audioPlayer);
 
     audioPlayer.on(DiscordVoice.AudioPlayerStatus.Idle, () => {
-      const nextSong = songs.shift();
-      if (nextSong !== undefined) {
-        musicQueue.queueMap.currentSong = nextSong;
-        playAudio(nextSong, audioPlayer);
-        // TODO: Send Song Info
+      const nextPlayable = playables.shift();
+      if (nextPlayable !== undefined) {
+        musicQueue.queueMap.currentSong = nextPlayable;
+        playAudio(nextPlayable, audioPlayer);
+        // TODO: Send Playable Info
       } else {
         musicQueue.queueMap.currentSong = null;
         musicQueue.leaveVoiceChannel();
