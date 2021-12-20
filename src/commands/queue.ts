@@ -7,5 +7,5 @@ export const executeQueueCommand = async (
 ) => {
   const { guildId } = interaction;
   const musicQueue = Queue.getMusicQueue(guildId).queueMap;
-  const { currentSong, songs } = musicQueue;
+  const { currentSong, playables } = musicQueue;
 };
