@@ -8,14 +8,17 @@ import { Playable } from "../playable/Playable";
 import { PlayableSong } from "../playable/PlayableSong";
 import { PlayableList } from "../playable/PlayableList";
 
-// TODO: Change playAudio function to work with classes instead of types
-export const playAudio = async (playable: Playable, audioPlayer: DiscordVoice.AudioPlayer) => {
-  let stream = await ytdl(playable.url, {
+export const playAudio = async (
+  audioPlayer: DiscordVoice.AudioPlayer,
+  isLive: boolean,
+  url: string,
+) => {
+  let stream = await ytdl(url, {
     filter: "audioonly",
     quality: "highestaudio",
-    liveBuffer: playable.isLive === true ? 1 << 11 : 0,
-    dlChunkSize: playable.isLive === true ? 1 << 10 : 1 << 27,
-    highWaterMark: playable.isLive === true ? 1 << 25 : 1 << 22,
+    liveBuffer: isLive === true ? 1 << 11 : 0,
+    dlChunkSize: isLive === true ? 1 << 10 : 1 << 27,
+    highWaterMark: isLive === true ? 1 << 25 : 1 << 22,
   });
   const audioResource = DiscordVoice.createAudioResource(stream, {
     inputType: DiscordVoice.StreamType.Opus,
