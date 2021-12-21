@@ -34,7 +34,10 @@ const validateInput = (input: string) => {
   return "search";
 };
 
-const playableFromUrl = async (url: string, member: Discord.GuildMember): Promise<PlayableSong> => {
+export const playableFromUrl = async (
+  url: string,
+  member: Discord.GuildMember,
+): Promise<PlayableSong> => {
   const video = await ytdl.getBasicInfo(url);
   const { ownerChannelName, isLiveContent, thumbnails, title, uploadDate, video_url } =
     video.videoDetails;
