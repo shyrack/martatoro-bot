@@ -15,7 +15,7 @@ export const executePlayCommand = async (
       if (playable !== undefined) {
         const queue = Queue.getMusicQueue(guildId);
         const queueLength = _.size(queue.queueMap.playables);
-        queue.addSong(memberVoiceChannel, playable);
+        queue.addPlayable(memberVoiceChannel, playable);
         const embed = await embedFromPlayable(
           playable,
           queueLength === 0
