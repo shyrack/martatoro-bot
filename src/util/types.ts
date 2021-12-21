@@ -1,16 +1,6 @@
 import Discord from "discord.js";
 import * as DiscordVoice from "@discordjs/voice";
-
-export type Playable = {
-  channel: string;
-  duration: number;
-  isLive: boolean;
-  member: Discord.GuildMember;
-  thumbnailUrl: string;
-  title: string;
-  uploadedAt: string;
-  urls: string[];
-};
+import { Playable } from "../playable/Playable";
 
 export type MusicQueue = {
   audioPlayer: DiscordVoice.AudioPlayer;

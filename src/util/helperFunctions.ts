@@ -4,16 +4,21 @@ import * as DiscordVoice from "@discordjs/voice";
 import ytdl from "ytdl-core-discord";
 import yts from "yt-search";
 import ytpl from "ytpl";
-import { Playable } from "./types";
+import { Playable } from "../playable/Playable";
+import { PlayableSong } from "../playable/PlayableSong";
+import { PlayableList } from "../playable/PlayableList";
 
-export const playAudio = async (playable: Playable, audioPlayer: DiscordVoice.AudioPlayer) => {
-  let stream = await ytdl(playable.urls[0], {
-    // TODO
+export const playAudio = async (
+  audioPlayer: DiscordVoice.AudioPlayer,
+  isLive: boolean,
+  url: string,
+) => {
+  let stream = await ytdl(url, {
     filter: "audioonly",
     quality: "highestaudio",
-    liveBuffer: playable.isLive === true ? 1 << 11 : 0,
-    dlChunkSize: playable.isLive === true ? 1 << 10 : 1 << 27,
-    highWaterMark: playable.isLive === true ? 1 << 25 : 1 << 22,
+    liveBuffer: isLive === true ? 1 << 11 : 0,
+    dlChunkSize: isLive === true ? 1 << 10 : 1 << 27,
+    highWaterMark: isLive === true ? 1 << 25 : 1 << 22,
   });
   const audioResource = DiscordVoice.createAudioResource(stream, {
     inputType: DiscordVoice.StreamType.Opus,
@@ -29,38 +34,41 @@ const validateInput = (input: string) => {
   return "search";
 };
 
-const playableFromUrl = async (url: string, member: Discord.GuildMember): Promise<Playable> => {
+const playableFromUrl = async (url: string, member: Discord.GuildMember): Promise<PlayableSong> => {
   const video = await ytdl.getBasicInfo(url);
-  const details = video.videoDetails;
-  return {
-    channel: details.ownerChannelName,
-    duration: -1,
-    isLive: details.isLiveContent,
-    member: member,
-    thumbnailUrl: _.find(details.thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "",
-    title: details.title,
-    uploadedAt: details.uploadDate,
-    urls: [details.video_url],
-  };
+  const { ownerChannelName, isLiveContent, thumbnails, title, uploadDate, video_url } =
+    video.videoDetails;
+  const thumbnailUrl = _.find(thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "";
+  return new PlayableSong(
+    ownerChannelName,
+    isLiveContent,
+    member,
+    thumbnailUrl,
+    title,
+    uploadDate,
+    video_url,
+  );
 };
 
 const playableFromYouTubePlaylist = async (
   url: string,
   member: Discord.GuildMember,
-): Promise<Playable> => {
+): Promise<PlayableList> => {
   const playlist = await ytpl(url, {
     limit: Infinity,
   });
-  return {
-    channel: playlist.author.name,
-    duration: -1,
-    isLive: false,
-    member: member,
-    thumbnailUrl: _.find(playlist.thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "",
-    title: playlist.title,
-    uploadedAt: playlist.lastUpdated,
-    urls: _.map(playlist.items, (item) => item.url),
-  };
+  const { author, thumbnails, title, lastUpdated, items } = playlist;
+  const thumbnailUrl = _.find(thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "";
+  const urls = _.map(items, (item) => item.url);
+  return new PlayableList(
+    author.name,
+    member,
+    thumbnailUrl,
+    title,
+    lastUpdated,
+    playlist.url,
+    urls,
+  );
 };
 
 const playableFromSearch = async (
@@ -86,52 +94,36 @@ export const playableFromInput = async (
     : playableFromYouTubePlaylist(input, member);
 };
 
-// export const getEmbedFromInfo = (
-//   videoDetails: string,
-//   description: string,
-//   member: Discord.GuildMember,
-//   queueLength: number,
-// ) => {
-//   const { channel, durationInSec, thumbnails, title, uploadedAt, url } = videoDetails;
-//   const embed = new Discord.MessageEmbed().setColor("#0088aa");
-//   const fields: Discord.EmbedFieldData[] = [
-//     {
-//       name: "Videolänge:",
-//       value: formatDuration(durationInSec),
-//       inline: true,
-//     },
-//     {
-//       name: "Hochgeladen von:",
-//       value: channel !== undefined ? channel.name ?? "" : "",
-//       inline: true,
-//     },
-//     { name: "Hochgeladen am:", value: uploadedAt ?? "", inline: true },
-//     {
-//       name: "Hinzugefügt von:",
-//       value: member.nickname ?? member.displayName,
-//       inline: true,
-//     },
-//   ];
-//   if (queueLength !== 0)
-//     fields.push({
-//       name: "Warteschlange:",
-//       value: queueLength.toString(),
-//       inline: true,
-//     });
-//   embed.setTitle(title ?? "");
-//   embed.setURL(url);
-//   embed.setThumbnail(thumbnails[0].url);
-//   embed.setDescription(description);
-//   embed.addFields(fields);
-//   return embed;
-// };
-
-const formatDuration = (seconds: number) => {
-  if (seconds === 0) {
-    return "livestream";
-  } else if (seconds < 3600) {
-    return new Date(seconds * 1000).toISOString().substring(14, 19);
-  } else {
-    return new Date(seconds * 1000).toISOString().substring(11, 19);
-  }
+export const embedFromPlayable = (
+  playable: Playable,
+  description: string,
+  member: Discord.GuildMember,
+  queueLength: number,
+) => {
+  const embed = new Discord.MessageEmbed().setColor("#0088aa");
+  const fields: Discord.EmbedFieldData[] = [
+    {
+      name: "Hochgeladen von:",
+      value: playable.getChannel !== undefined ? playable.getChannel ?? "" : "",
+      inline: true,
+    },
+    { name: "Hochgeladen am:", value: playable.getUploadDate ?? "", inline: true },
+    {
+      name: "Hinzugefügt von:",
+      value: member.nickname ?? member.displayName,
+      inline: true,
+    },
+  ];
+  if (queueLength !== 0)
+    fields.push({
+      name: "Warteschlange:",
+      value: queueLength.toString(),
+      inline: true,
+    });
+  embed.setTitle(playable.getTitle ?? "");
+  embed.setURL(playable.getUrl);
+  embed.setThumbnail(playable.getThumbnailUrl);
+  embed.setDescription(description);
+  embed.addFields(fields);
+  return embed;
 };

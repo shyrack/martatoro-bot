@@ -1,7 +1,7 @@
-import Discord from "discord.js";
 import _ from "lodash";
+import Discord from "discord.js";
 import { Queue } from "../queue/queue";
-import { playableFromInput } from "../util/helperFunctions";
+import { embedFromPlayable, playableFromInput } from "../util/helperFunctions";
 
 export const executePlayCommand = async (
   interaction: Discord.CommandInteraction<Discord.CacheType>,
@@ -11,24 +11,22 @@ export const executePlayCommand = async (
   if (input !== null && member instanceof Discord.GuildMember) {
     const memberVoiceChannel = member.voice.channel;
     if (memberVoiceChannel instanceof Discord.VoiceChannel) {
-      const infos = await playableFromInput(input, member);
-      if (infos !== undefined) {
-        // const musicQueue = Queue.getMusicQueue(guildId);
-        // _.forEach(infos, (info) =>
-        //   musicQueue.addSong(memberVoiceChannel, {
-        //     isLive: info.LiveStreamData.isLive,
-        //     member: member,
-        //   }),
-        // );
-        // const embeds = _.map(infos, (info) =>
-        //   getEmbedFromInfo(
-        //     info.video_details,
-        //     "Song wurde zur Warteschlange hinzugefügt",
-        //     member,
-        //     _.size(musicQueue.queueMap.songs), // TODO: fix number of song in queue
-        //   ),
-        // );
-        // interaction.reply({ embeds: embeds });
+      const playable = await playableFromInput(input, member);
+      if (playable !== undefined) {
+        const queue = Queue.getMusicQueue(guildId);
+        const queueLength = _.size(queue.queueMap.playables);
+        queue.addSong(memberVoiceChannel, playable);
+        const embed = await embedFromPlayable(
+          playable,
+          queueLength === 0
+            ? "Song or playlist will now be played."
+            : "Song or playlist was added to the queue.",
+          member,
+          _.size(queue.queueMap.playables),
+        );
+        interaction.reply({
+          embeds: [embed],
+        });
         return;
       }
     }
