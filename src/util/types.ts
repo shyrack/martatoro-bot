@@ -3,13 +3,19 @@ import * as DiscordVoice from "@discordjs/voice";
 
 export type Playable = {
   channel: string;
-  duration: number;
-  isLive: boolean;
   member: Discord.GuildMember;
   thumbnailUrl: string;
   title: string;
   uploadedAt: string;
+  url: string;
+};
+
+export type PlayableList = Playable & {
   urls: string[];
+};
+
+export type PlayableSong = Playable & {
+  isLive: boolean;
 };
 
 export type MusicQueue = {
