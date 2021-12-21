@@ -65,7 +65,7 @@ export namespace Queue {
       joinVoiceChannel(channel);
       if (guildQueue.currentSong === null) {
         guildQueue.currentSong = playable;
-        playAudio(playable, guildQueue.audioPlayer);
+        // playAudio(playable, guildQueue.audioPlayer);
       } else {
         guildQueue.playables.push(playable);
       }
