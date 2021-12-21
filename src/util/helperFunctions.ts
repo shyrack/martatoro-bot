@@ -4,9 +4,12 @@ import * as DiscordVoice from "@discordjs/voice";
 import ytdl from "ytdl-core-discord";
 import yts from "yt-search";
 import ytpl from "ytpl";
-import { Playable, PlayableList, PlayableSong } from "./types";
+import { Playable } from "../playable/Playable";
+import { PlayableSong } from "../playable/PlayableSong";
+import { PlayableList } from "../playable/PlayableList";
 
-export const playAudio = async (playable: PlayableSong, audioPlayer: DiscordVoice.AudioPlayer) => {
+// TODO: Change playAudio function to work with classes instead of types
+export const playAudio = async (playable: Playable, audioPlayer: DiscordVoice.AudioPlayer) => {
   let stream = await ytdl(playable.url, {
     filter: "audioonly",
     quality: "highestaudio",
@@ -30,16 +33,18 @@ const validateInput = (input: string) => {
 
 const playableFromUrl = async (url: string, member: Discord.GuildMember): Promise<PlayableSong> => {
   const video = await ytdl.getBasicInfo(url);
-  const details = video.videoDetails;
-  return {
-    channel: details.ownerChannelName,
-    isLive: details.isLiveContent,
-    member: member,
-    thumbnailUrl: _.find(details.thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "",
-    title: details.title,
-    uploadedAt: details.uploadDate,
-    url: details.video_url,
-  };
+  const { ownerChannelName, isLiveContent, thumbnails, title, uploadDate, video_url } =
+    video.videoDetails;
+  const thumbnailUrl = _.find(thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "";
+  return new PlayableSong(
+    ownerChannelName,
+    isLiveContent,
+    member,
+    thumbnailUrl,
+    title,
+    uploadDate,
+    video_url,
+  );
 };
 
 const playableFromYouTubePlaylist = async (
@@ -49,15 +54,18 @@ const playableFromYouTubePlaylist = async (
   const playlist = await ytpl(url, {
     limit: Infinity,
   });
-  return {
-    channel: playlist.author.name,
-    member: member,
-    thumbnailUrl: _.find(playlist.thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "",
-    title: playlist.title,
-    uploadedAt: playlist.lastUpdated,
-    url: playlist.url,
-    urls: _.map(playlist.items, (item) => item.url),
-  };
+  const { author, thumbnails, title, lastUpdated, items } = playlist;
+  const thumbnailUrl = _.find(thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "";
+  const urls = _.map(items, (item) => item.url);
+  return new PlayableList(
+    author.name,
+    member,
+    thumbnailUrl,
+    title,
+    lastUpdated,
+    playlist.url,
+    urls,
+  );
 };
 
 const playableFromSearch = async (
@@ -89,15 +97,14 @@ export const embedFromPlayable = (
   member: Discord.GuildMember,
   queueLength: number,
 ) => {
-  const { channel, thumbnailUrl, title, uploadedAt, url } = playable;
   const embed = new Discord.MessageEmbed().setColor("#0088aa");
   const fields: Discord.EmbedFieldData[] = [
     {
       name: "Hochgeladen von:",
-      value: channel !== undefined ? channel ?? "" : "",
+      value: playable.getChannel !== undefined ? playable.getChannel ?? "" : "",
       inline: true,
     },
-    { name: "Hochgeladen am:", value: uploadedAt ?? "", inline: true },
+    { name: "Hochgeladen am:", value: playable.getUploadDate ?? "", inline: true },
     {
       name: "Hinzugefügt von:",
       value: member.nickname ?? member.displayName,
@@ -110,9 +117,9 @@ export const embedFromPlayable = (
       value: queueLength.toString(),
       inline: true,
     });
-  embed.setTitle(title ?? "");
-  embed.setURL(url);
-  embed.setThumbnail(thumbnailUrl);
+  embed.setTitle(playable.getTitle ?? "");
+  embed.setURL(playable.getUrl);
+  embed.setThumbnail(playable.getThumbnailUrl);
   embed.setDescription(description);
   embed.addFields(fields);
   return embed;
