@@ -58,7 +58,7 @@ const playableFromYouTubePlaylist = async (
   member: Discord.GuildMember,
 ): Promise<PlayableList> => {
   const playlist = await ytpl(url, {
-    limit: Infinity,
+    limit: 10,
   });
   const { author, thumbnails, title, lastUpdated, items } = playlist;
   const thumbnailUrl = _.find(thumbnails, (thumbnail) => thumbnail.url !== null)?.url ?? "";
