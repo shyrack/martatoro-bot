@@ -1,9 +1,13 @@
+import _ from "lodash";
 import Discord from "discord.js";
 import * as DiscordVoice from "@discordjs/voice";
 import { client } from "..";
-import { playAudio } from "../util/helperFunctions";
+import { playableFromUrl, playAudio } from "../util/helperFunctions";
 import { AudioPlayerEvents } from "../events/audioPlayerEvents";
-import { MusicQueue, Playable } from "../util/types";
+import { MusicQueue } from "../util/types";
+import { Playable } from "../playable/Playable";
+import { PlayableSong } from "../playable/PlayableSong";
+import { PlayableList } from "../playable/PlayableList";
 
 const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): MusicQueue => {
   const musicQueue: MusicQueue = {
@@ -61,11 +65,28 @@ export namespace Queue {
       }
     };
 
-    const addSong = (channel: Discord.VoiceChannel, playable: Playable) => {
+    const addPlayable = async (
+      channel: Discord.VoiceChannel,
+      member: Discord.GuildMember,
+      playable: Playable,
+    ) => {
       joinVoiceChannel(channel);
       if (guildQueue.currentSong === null) {
         guildQueue.currentSong = playable;
-        // playAudio(playable, guildQueue.audioPlayer);
+        if (playable instanceof PlayableSong) {
+          guildQueue.currentSong = playable;
+          playAudio(guildQueue.audioPlayer, playable.isLive, playable.getUrl);
+        } else if (playable instanceof PlayableList) {
+          const url = playable.getUrls.shift();
+          if (url !== undefined) {
+            guildQueue.currentSong = playable;
+            playAudio(guildQueue.audioPlayer, false, url);
+            const playables = await Promise.all(
+              _.map(playable.getUrls, (url) => playableFromUrl(url, member)),
+            );
+            _.forEach(playables, (playableSong) => guildQueue.playables.push(playableSong));
+          }
+        }
       } else {
         guildQueue.playables.push(playable);
       }
@@ -83,7 +104,7 @@ export namespace Queue {
     };
 
     return {
-      addSong: addSong,
+      addPlayable: addPlayable,
       leaveVoiceChannel: leaveVoiceChannel,
       queueMap: guildQueue,
       skip: skip,
