@@ -71,24 +71,23 @@ export namespace Queue {
       playable: Playable,
     ) => {
       joinVoiceChannel(channel);
-      if (guildQueue.currentSong === null) {
-        guildQueue.currentSong = playable;
-        if (playable instanceof PlayableSong) {
+      if (playable instanceof PlayableSong) {
+        if (guildQueue.currentSong === null) {
           guildQueue.currentSong = playable;
           playAudio(guildQueue.audioPlayer, playable.isLive, playable.getUrl);
-        } else if (playable instanceof PlayableList) {
-          const url = playable.getUrls.shift();
-          if (url !== undefined) {
-            guildQueue.currentSong = playable;
-            playAudio(guildQueue.audioPlayer, false, url);
-            const playables = await Promise.all(
-              _.map(playable.getUrls, (url) => playableFromUrl(url, member)),
-            );
-            _.forEach(playables, (playableSong) => guildQueue.playables.push(playableSong));
-          }
         }
-      } else {
-        guildQueue.playables.push(playable);
+      } else if (playable instanceof PlayableList) {
+        if (guildQueue.currentSong === null) {
+          const firstSongUrl = playable.getUrls.shift();
+          if (firstSongUrl === undefined) return;
+          const firstSong = await playableFromUrl(firstSongUrl, member);
+          guildQueue.currentSong = firstSong;
+          playAudio(guildQueue.audioPlayer, firstSong.isLive, firstSong.getUrl);
+        }
+        const playables = await Promise.all(
+          _.map(playable.getUrls, (url) => playableFromUrl(url, member)),
+        );
+        _.forEach(playables, (playableSong) => guildQueue.playables.push(playableSong));
       }
     };
 
