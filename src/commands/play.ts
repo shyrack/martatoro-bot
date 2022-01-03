@@ -13,16 +13,16 @@ export const executePlayCommand = async (
     if (memberVoiceChannel instanceof Discord.VoiceChannel) {
       const playable = await playableFromInput(input, member);
       if (playable !== undefined) {
-        const queue = Queue.getMusicQueue(guildId);
-        const queueLength = _.size(queue.queueMap.playables);
-        queue.addPlayable(memberVoiceChannel, member, playable);
+        const queueContext = Queue.getMusicQueue(guildId);
+        const musicQueue = queueContext.queueMap;
+        queueContext.addPlayable(memberVoiceChannel, member, playable);
         const embed = await embedFromPlayable(
           playable,
-          queueLength === 0
+          musicQueue.currentSong === null
             ? "Song or playlist will now be played."
             : "Song or playlist was added to the queue.",
           member,
-          _.size(queue.queueMap.playables),
+          _.size(musicQueue.playables),
         );
         interaction.reply({
           embeds: [embed],
