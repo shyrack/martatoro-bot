@@ -14,8 +14,7 @@ export namespace AudioPlayerEvents {
       const nextPlayable = playables.shift();
       if (nextPlayable !== undefined) {
         musicQueue.queueMap.currentSong = nextPlayable;
-        // playAudio(nextPlayable, audioPlayer);
-        // TODO: Send Playable Info
+        playAudio(audioPlayer, nextPlayable.isLive, nextPlayable.getUrl);
       } else {
         musicQueue.queueMap.currentSong = null;
         musicQueue.leaveVoiceChannel();
