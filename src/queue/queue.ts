@@ -18,7 +18,7 @@ const initMusicQueue = (guildId: string, musicQueues: Map<string, MusicQueue>): 
     playerSubscription: undefined,
     playables: [],
     voiceChannel: null,
-    voiceConnection: null,
+    voiceConnection: null
   };
   musicQueues.set(guildId, musicQueue);
   AudioPlayerEvents.registerListener(guildId);
@@ -40,9 +40,9 @@ export namespace Queue {
         guild !== undefined
       ) {
         const voiceConnection = DiscordVoice.joinVoiceChannel({
-          adapterCreator: guild.voiceAdapterCreator,
+          adapterCreator: guild.voiceAdapterCreator as DiscordVoice.DiscordGatewayAdapterCreator,
           channelId: channel.id,
-          guildId: guildId,
+          guildId: guildId
         });
         const playerSubscription = voiceConnection.subscribe(guildQueue.audioPlayer);
         guildQueue.playerSubscription = playerSubscription;
@@ -65,11 +65,7 @@ export namespace Queue {
       }
     };
 
-    const addPlayable = async (
-      channel: Discord.VoiceChannel,
-      member: Discord.GuildMember,
-      playable: Playable,
-    ) => {
+    const addPlayable = async (channel: Discord.VoiceChannel, member: Discord.GuildMember, playable: Playable) => {
       joinVoiceChannel(channel);
       if (playable instanceof PlayableSong) {
         if (guildQueue.currentSong === null) {
@@ -84,9 +80,7 @@ export namespace Queue {
           guildQueue.currentSong = firstSong;
           playAudio(guildQueue.audioPlayer, firstSong.isLive, firstSong.getUrl);
         }
-        const playables = await Promise.all(
-          _.map(playable.getUrls, (url) => playableFromUrl(url, member)),
-        );
+        const playables = await Promise.all(_.map(playable.getUrls, (url) => playableFromUrl(url, member)));
         _.forEach(playables, (playableSong) => guildQueue.playables.push(playableSong));
       }
     };
@@ -108,7 +102,7 @@ export namespace Queue {
       queueMap: guildQueue,
       skip: skip,
       stop: stop,
-      voiceChannel: guildQueue.voiceChannel,
+      voiceChannel: guildQueue.voiceChannel
     };
   };
 }
