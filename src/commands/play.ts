@@ -5,6 +5,9 @@ import { embedFromPlayable, playableFromInput } from "../util/helperFunctions";
 
 export const executePlayCommand = async (interaction: Discord.CommandInteraction<Discord.CacheType>) => {
   const { guildId, member, options } = interaction;
+  if (guildId === null) {
+    return;
+  }
   const input = options.getString("input");
   if (input !== null && member instanceof Discord.GuildMember) {
     const memberVoiceChannel = member.voice.channel;

@@ -1,10 +1,11 @@
 import Discord from "discord.js";
 import { Queue } from "../queue/queue";
 
-export const executeStopCommand = async (
-  interaction: Discord.CommandInteraction<Discord.CacheType>,
-) => {
+export const executeStopCommand = async (interaction: Discord.CommandInteraction<Discord.CacheType>) => {
   const { guildId, member } = interaction;
+  if (guildId === null) {
+    return;
+  }
   if (member instanceof Discord.GuildMember) {
     const musicQueue = Queue.getMusicQueue(guildId);
     musicQueue.stop();
