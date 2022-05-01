@@ -71,6 +71,8 @@ export namespace Queue {
         if (guildQueue.currentSong === null) {
           guildQueue.currentSong = playable;
           playAudio(guildQueue.audioPlayer, playable.isLive, playable.getUrl);
+        } else {
+          guildQueue.playables.push(playable);
         }
       } else if (playable instanceof PlayableList) {
         if (guildQueue.currentSong === null) {
